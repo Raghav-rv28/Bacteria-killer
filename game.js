@@ -204,7 +204,7 @@ function animate(size) {
     var newSize = size + (SCALE_STEP * elapsed) / 1000.0;
     // Update the score (adjusted by the elapsed time):
     playerScore += newSize;
-    document.getElementById("score").innerHTML = (playerScore).toFixed(0);
+    //document.getElementById("score").innerHTML = (playerScore).toFixed(0);
     return (newSize %= 360);
 
 }

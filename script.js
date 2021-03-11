@@ -58,7 +58,7 @@ function main(){
     function tick(){
         if(true){
             currentSizeAcc = animate(currentSizeAcc);
-            draw(gl,currentSizeAcc, modelMatrix, u_ModelMatrix, bacCenterGenerator(), bacColorGenerator());
+            draw(gl,currentSizeAcc, modelMatrix, u_Matrix, bacCenterGenerator(), bacColorGenerator());
         }
         CheckGameStatus();
         if(!gameOver)
@@ -68,3 +68,16 @@ function main(){
     }
     tick();
 }
+
+function draw(gl, currentSizeAcc, modelMatrix, u_Matrix, bacCenters, bacColors){
+    var temp= currentSizeAcc;
+    gl.uniformMatrix4fv(u_Matrix, false, modelMatrix.elements);
+    
+    // Clear <canvas>
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    //draw the Main Dish
+    drawpetriDish(gl);
+
+}
+
