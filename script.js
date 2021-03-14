@@ -36,6 +36,7 @@ var bacteriaColors = [
 ]
 var currentBacteriaSize = 0.0;
 var gameOver=false
+
 function main(){
     // Retrieve <canvas> element
     var canvas = document.getElementById('webgl');
@@ -80,6 +81,9 @@ function main(){
             currentSizeAcc = animate(currentSizeAcc);
             draw(gl,currentSizeAcc, modelMatrix, u_Matrix, bacCenters,bacColor);
         }
+
+        checkWinStatus();                          // Check if the player has won
+        checkLossStatus();                         // Check if the player has lost
         //CheckGameStatus();
         if(!gameOver)
             requestAnimationFrame(tick,canvas);
@@ -92,6 +96,7 @@ function main(){
 // Last time that this function was called
 var g_last = Date.now();
 
+// Utility function which is called each tick to animate the growth of the bacteria
 function animate(size){
     var now=Date.now();
     var elapsed= now- g_last;
@@ -99,12 +104,19 @@ function animate(size){
     var newSize= size +(SCALE_STEP* elapsed) /1000.0;
     return (newSize%=360);
 }
+/** Main draw function
+* @param gl                  The WebGL context
+* @param currentSize         The current scale of the bacteria.
+* @param modelMatrix         The WebGL program's model matrix (currently unused)
+* @param u_ModelMatrix       The Vertex Shader's Uniform Model Matrix attribute (currently unused)
+* @param bacteriaLocations   An Array containing bacteria vertex locations
+*/
 
 function draw(gl, currentSizeAcc, modelMatrix, u_Matrix, bacCenters,bacColor){
     var temp= currentSizeAcc;
     gl.uniformMatrix4fv(u_Matrix, false, modelMatrix.elements);
     
-    // Clear <canvas>
+    
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     //draw the Main Dish
@@ -127,6 +139,15 @@ function drawpetriDish(gl){
     }
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, DishVertices.length / 2);
 }
+/**
+ * 
+ * @param gl                The WebGL context
+ * @param centerx           The center X position of the bacteria being drawn (this should be on the circumference of the back dish)
+ * @param centery           The center y position of the bacteria being drawn (this should also be on the circumference of the dish)
+ * @param currSizeAcc       The current size acceleration and how fast is the bacteria growing. The ratio is in form of float
+ * @param bacteriaColor     The color for the bacteria
+ * @returns 
+ */
 
 function drawBacteria(gl, centerx, centery, currSizeAcc,bacteriaColor){
     var bacVertices= VertexGen(centerx,centery,currSizeAcc, true);
@@ -151,16 +172,16 @@ function colorGenBac(){
     return bColor;
 }
 /** a function which generates random bacteria locations on the petri dish
-*   @returns a list of vertexs where the intial locations of bacteria would be
+*   @returns a list of vertexs where the intial locations of bacteria would be loacted
 */
 function initialBacteriaLocation(){
     var bacVertexCenter=[]
     for (var i=0; i<10;i++){
         var randomradian=(Math.floor(Math.random() * 360) + 1) * Math.PI / 180;
-        var cx=Math.sin(randomradian).toFixed(2) * DISH_SCALE;
-        var cy=Math.cos(randomradian).toFixed(2) * DISH_SCALE;
-        bacVertexCenter= bacVertexCenter.concat(cx);
-        bacVertexCenter= bacVertexCenter.concat(cy);
+        var wx=Math.sin(randomradian).toFixed(2) * DISH_SCALE;
+        var wy=Math.cos(randomradian).toFixed(2) * DISH_SCALE;
+        bacVertexCenter= bacVertexCenter.concat(wx);
+        bacVertexCenter= bacVertexCenter.concat(wy);
     }
     console.log(bacVertexCenter);
     return bacVertexCenter;
@@ -200,6 +221,7 @@ function circleColorGen(R,G,B){
     return cColors;
 }
 
+// Utility function to initialize the vertex buffers needed to draw any shapes.
 function initVertexBuffers(gl, vertexArr, numVertices) {
     var vertices = new Float32Array(vertexArr);
     var n = numVertices;   // The number of vertices
@@ -230,7 +252,7 @@ function initVertexBuffers(gl, vertexArr, numVertices) {
     return n;
 }
 
-
+// Utility function to initialize the colour buffers needed to define colours for vertices of shapes.
 function initColorBuffers(gl, colorArr, numVertices){
     var colors = new Float32Array(colorArr);
     var n = numVertices;   // The number of vertices
@@ -260,3 +282,61 @@ function initColorBuffers(gl, colorArr, numVertices){
 
     return n;
 }
+
+function OnclickHandler(e){
+    let canvas = document.getElementById('gameCanvas');
+    let recta = canvas.getBoundingClientRect();
+    
+    var wx = (e.clientX - recta.left) / canvas.clientWidth * 2 - 1;
+    var wy = (e.clientY - recta.top) / canvas.clientHeight * (-2) + 1;
+    console.log("Canvas clicked x = " + wx.toFixed(2) + " y = " + wy.toFixed(2));
+
+   
+    for (var i = 0; i < 20; i+=2){
+
+        
+        if (bacteria_centers[i].toFixed(1) === wx.toFixed(1)){
+            if (bacteria_centers[i+1].toFixed(1) === wy.toFixed(1)){
+                console.log("bacteria centers were hit");
+                bacteriaVisibility[i/2] = false;
+            }
+        }
+
+       
+        if(Math.sqrt(Math.pow(Math.abs(wx - bacteria_centers[i]), 2) + Math.pow(Math.abs(wy - bacteria_centers[i+1]), 2)) < currentBacteriaSize){
+            console.log("bacteria hit!!");
+            bacteriaVisibility[i/2] = false;
+        }
+
+    }
+}
+
+// Function to check the win status. 
+//This called every frame within the tick() function until the game is won or lost.
+function checkWinStatus(){
+
+    if ((bacteriaVisibility.includes(true))){
+        
+        return false;
+    }else{
+        console.log("game over you win! :-)");
+        gameWon = true;
+        document.getElementById('gameMessage').innerHTML = "<i style='color:red; font-size: 22pt'> You win </i> ";
+        return true;
+    }
+
+}
+
+// Function to check the loss status and update the message to the user if they have lost. 
+//This is called every frame within the tick() function until the game is won or lost.
+function checkLossStatus(){
+
+    if (playerScore >= PLAYER_LOSS_SCORE){
+        gameLost = true;
+        alert("you lose and game over :-( ");
+        document.getElementById('gameMessage').innerHTML = "<i style='color:yellow; font-size: 22pt'> You lose </i> "
+    }
+
+}
+
+
