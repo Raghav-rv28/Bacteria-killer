@@ -17,11 +17,11 @@ var FSHADER_SOURCE =
         '}\n';
  
 const DISH_SCALE = 0.90;
-const SCALE_STEP = 0.03;  
+const SCALE_STEP = 0.01;  
 var PLAYERSCORE = 0;
 var LOSINGSCORE = 20;
     //Variable Declaration
-var currentSizeAcc = 0.01;
+var currentSizeAcc = 0.03;
 var bacAlive=[]
 var bacCenters = []
 var bacteriaColors = [
@@ -85,7 +85,6 @@ function main(){
             currentSizeAcc = animate(currentSizeAcc);
             draw(gl,currentSizeAcc, modelMatrix, u_Matrix, bacCenters,bacColor);
         }
-
         gameOverCheck();                        // Check if the player has lost
         if(!gameOver)
             requestAnimationFrame(tick,canvas);
@@ -154,6 +153,7 @@ function drawpetriDish(gl){
 
 function drawBacteria(gl, centerx, centery, currSizeAcc,bacteriaColor){
     var bacVertices= VertexGen(centerx,centery,currSizeAcc, true);
+    //bacteriaOverLapCheck(bacVertices);
     var bC=bacteriaColor;
     let x = initVertexBuffers(gl,bacVertices, bacVertices.length/2);
     let y = initColorBuffers(gl,bC,bC.length/3);
@@ -299,18 +299,32 @@ function gameCheck(ClientX,ClientY){
     for (var i = 0; i < 20; i+=2){
         if (bacCenters[i].toFixed(1) === ClientX.toFixed(1)){
             if (bacCenters[i+1].toFixed(1) === ClientY.toFixed(1)){
-                console.log("bacteria centers were hit");
                 bacAlive[i/2] = false;
+                console.log("Bacteria Center Hit!");
             }
         } 
        
         if(Math.sqrt(Math.pow(Math.abs(ClientX - bacCenters[i]), 2) + Math.pow(Math.abs(ClientY - bacCenters[i+1]), 2)) < currentBacteriaSize){
-            console.log("bacteria hit!!");
             bacAlive[i/2] = false;
+            console.log("Bacteria Hit!");
         }
-
     }
 }
+/**function bacteriaOverLapCheck(bacVertexes){
+    //console.log(bacVertexes);
+   for (var i = 0;i<10;i+=2){
+        var bacithvertices = bacVertexes[i];
+        console.log("vertices ith position: "+bacithvertices.length);
+        for (var j =0; j<10;j+=2){
+            var bacjthvertices = bacVertexes[j];
+            console.log("vertices length: "+bacjthvertices);
+            for ( var l=0; j<bacjthvertices.length;l+=2){
+                if(bacjthvertices[l].includes(bacithvertices[j]))
+                    bacAlive[i/2]=false;
+            }
+        }
+    }
+}*/
 function gameOverCheck(){
     if(bacAlive.includes(true) && (PLAYERSCORE<=LOSINGSCORE)){
         return false;
