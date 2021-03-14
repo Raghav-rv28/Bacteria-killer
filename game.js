@@ -478,7 +478,7 @@ function clickHandler(e){
         if(Math.sqrt(Math.pow(Math.abs(cx - bacteriaCenters[i]), 2) + Math.pow(Math.abs(cy - bacteriaCenters[i+1]), 2)) < currentBacteriaSize){
             console.log("Bacteria Hit!");
             bacteriaVisibility[i/2] = false;
-        }
+        }s
 
     }
 }

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Computer Graphics Project 1: Super Bug Zapper</title>
+    <title>COMP-4471 Project 1</title>
 
     <!-- Custom Javascript Source Files: -->
     <script type="text/javascript" src="script.js"></script>
@@ -17,23 +17,16 @@
 
 <body onload="main();">
 
-    <div id="gameWrapper" class="container">
+    <div id="gamewrapper" class="container">
 
-        <p>
-            <b>Instructions: </b>
-            Destroy all the bacteria by clicking on them. <br /> Watch out: if <b>any</b> bacteria reach <b>200&mu;m</b>, they will become too strong for your
-            poison to stop!
-        </p>
-        <canvas id="webgl" onclick="clickHandler(event);" width="500px" height="500px">
+        <h2> WELCOME TO BACTERIA SEE KILL</h2>
+        <h3> Click the Bacteria to kill them using poison</h3>
+        <h4> You will lose if any bacteria grows over the size of 200 </h4>
+        <canvas id="webgl" onclick="OnclickHandler(event);" width="500px" height="500px">
             Your browser does not appear to support HTML5.
         </canvas>
         <br />
-        <b id="gameMessage"></b>
-        <br />
-        <button onclick="togglePause();" id="pauseBtn" class="btn btn-primary">Pause</button>
-        &emsp;&emsp;
-        <button onclick="window.location.reload();" id="rstBtn" class="btn btn-primary">Restart</button>
-        &emsp;&emsp;
+        <b id="gameMessage"></b><br/>
         <b>Bacteria Size: </b><i id="score"></i><i>&mu;m</i>
         <br />
 

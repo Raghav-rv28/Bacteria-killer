@@ -18,10 +18,12 @@ var FSHADER_SOURCE =
  
 const DISH_SCALE = 0.90;
 const SCALE_STEP = 0.03;  
-
+var PLAYERSCORE = 0;
+var LOSINGSCORE = 20;
     //Variable Declaration
 var currentSizeAcc = 0.01;
 var bacAlive=[]
+var bacCenters = []
 var bacteriaColors = [
     [0.0,0.0,1.0],  //BLUE
     [1.0,0.0,0.0],  //RED
@@ -35,6 +37,8 @@ var bacteriaColors = [
     [0.5,0.0,0.5]   //PURPLE
 ]
 var currentBacteriaSize = 0.0;
+
+//BOOLEANS
 var gameOver=false
 
 function main(){
@@ -68,7 +72,7 @@ function main(){
     var modelMatrix = new Matrix4();
 
     // BACTERIA GENERATION AND COLORING
-    var bacCenters = initialBacteriaLocation();
+    bacCenters = initialBacteriaLocation();
     var bacColor= colorGenBac();
     //console.log(bacColor);
     //KILLING AND ALIVE PROCESS
@@ -82,9 +86,7 @@ function main(){
             draw(gl,currentSizeAcc, modelMatrix, u_Matrix, bacCenters,bacColor);
         }
 
-        checkWinStatus();                          // Check if the player has won
-        checkLossStatus();                         // Check if the player has lost
-        //CheckGameStatus();
+        gameOverCheck();                        // Check if the player has lost
         if(!gameOver)
             requestAnimationFrame(tick,canvas);
         else
@@ -102,6 +104,8 @@ function animate(size){
     var elapsed= now- g_last;
     g_last=now;
     var newSize= size +(SCALE_STEP* elapsed) /1000.0;
+    PLAYERSCORE  += newSize;
+    document.getElementById("score").innerHTML = (PLAYERSCORE).toFixed(0);
     return (newSize%=360);
 }
 /** Main draw function
@@ -129,7 +133,6 @@ function draw(gl, currentSizeAcc, modelMatrix, u_Matrix, bacCenters,bacColor){
 
 function drawpetriDish(gl){
     var DishVertices=VertexGen(0, 0, 0.9, false);
-    console.log(DishVertices.length);
     var Dishcolors = circleColorGen(1,1,1);
     let x = initVertexBuffers(gl,DishVertices,DishVertices.length/2);
     let y = initColorBuffers(gl,Dishcolors,Dishcolors.length/3);
@@ -152,7 +155,6 @@ function drawpetriDish(gl){
 function drawBacteria(gl, centerx, centery, currSizeAcc,bacteriaColor){
     var bacVertices= VertexGen(centerx,centery,currSizeAcc, true);
     var bC=bacteriaColor;
-    console.log(bC);
     let x = initVertexBuffers(gl,bacVertices, bacVertices.length/2);
     let y = initColorBuffers(gl,bC,bC.length/3);
 
@@ -284,59 +286,45 @@ function initColorBuffers(gl, colorArr, numVertices){
 }
 
 function OnclickHandler(e){
-    let canvas = document.getElementById('gameCanvas');
-    let recta = canvas.getBoundingClientRect();
+    let canvas = document.getElementById('webgl');
+    let rect = canvas.getBoundingClientRect();
     
-    var wx = (e.clientX - recta.left) / canvas.clientWidth * 2 - 1;
-    var wy = (e.clientY - recta.top) / canvas.clientHeight * (-2) + 1;
-    console.log("Canvas clicked x = " + wx.toFixed(2) + " y = " + wy.toFixed(2));
+    var cx = (e.clientX - rect.left) / canvas.clientWidth * 2 - 1;
+    var cy = (e.clientY - rect.top) / canvas.clientHeight * (-2) + 1;
+    console.log("Canvas clicked x = " + cx.toFixed(2) + " y = " + cy.toFixed(2));
+    gameCheck(cx,cy);
+}
 
-   
+function gameCheck(ClientX,ClientY){
     for (var i = 0; i < 20; i+=2){
-
-        
-        if (bacteria_centers[i].toFixed(1) === wx.toFixed(1)){
-            if (bacteria_centers[i+1].toFixed(1) === wy.toFixed(1)){
+        if (bacCenters[i].toFixed(1) === ClientX.toFixed(1)){
+            if (bacCenters[i+1].toFixed(1) === ClientY.toFixed(1)){
                 console.log("bacteria centers were hit");
-                bacteriaVisibility[i/2] = false;
+                bacAlive[i/2] = false;
             }
-        }
-
+        } 
        
-        if(Math.sqrt(Math.pow(Math.abs(wx - bacteria_centers[i]), 2) + Math.pow(Math.abs(wy - bacteria_centers[i+1]), 2)) < currentBacteriaSize){
+        if(Math.sqrt(Math.pow(Math.abs(ClientX - bacCenters[i]), 2) + Math.pow(Math.abs(ClientY - bacCenters[i+1]), 2)) < currentBacteriaSize){
             console.log("bacteria hit!!");
-            bacteriaVisibility[i/2] = false;
+            bacAlive[i/2] = false;
         }
 
     }
 }
-
-// Function to check the win status. 
-//This called every frame within the tick() function until the game is won or lost.
-function checkWinStatus(){
-
-    if ((bacteriaVisibility.includes(true))){
-        
+function gameOverCheck(){
+    if(bacAlive.includes(true) && (PLAYERSCORE<=LOSINGSCORE)){
         return false;
-    }else{
-        console.log("game over you win! :-)");
-        gameWon = true;
-        document.getElementById('gameMessage').innerHTML = "<i style='color:red; font-size: 22pt'> You win </i> ";
+    }
+    else if(bacAlive.includes(true) == false){
+        alert("YOU MADE THE GAME YOUR BITCH, CONGRATS :-)");
+        gameOver = true;
+        document.getElementById('gameMessage').innerHTML = "YOU WIN";
         return true;
     }
-
-}
-
-// Function to check the loss status and update the message to the user if they have lost. 
-//This is called every frame within the tick() function until the game is won or lost.
-function checkLossStatus(){
-
-    if (playerScore >= PLAYER_LOSS_SCORE){
-        gameLost = true;
-        alert("you lose and game over :-( ");
-        document.getElementById('gameMessage').innerHTML = "<i style='color:yellow; font-size: 22pt'> You lose </i> "
+    if( PLAYERSCORE>= LOSINGSCORE){
+        gameOver= true;
+        alert("THE GAME MADE YOU HIS BITCH, SORRY :p");
+        document.getElementById('gameMessage').innerHTML = "YOU LOSE"
     }
-
 }
-
 
